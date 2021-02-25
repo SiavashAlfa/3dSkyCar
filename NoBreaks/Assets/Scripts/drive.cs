@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class drive : MonoBehaviour
 {
-    public ParticleSystem dirt;
-    private bool ondirt;
     public float acculartion;
     public GameObject sphere;
     private float speed;
@@ -16,65 +14,62 @@ public class drive : MonoBehaviour
     private float curruntspeed;
     private float curruntrotate;
     public GameObject p;
-    [Range(0,4)]
+    [Range(0, 4)]
     public float height;
-    [Range(0,1f)]
+    [Range(0, 1f)]
     public float dritangel;
     private float curruntdrift;
     public float maxspeed;
     [Header("Whells")]
     public GameObject[] whells;
     public int rpm;
-    public TrailRenderer[] skids; 
+    public TrailRenderer[] skids;
 
     void Start()
     {
-        rb =sphere.GetComponent<Rigidbody>();
-        dirt.Stop();
+        rb = sphere.GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        transform.position = sphere.transform.position - new Vector3(0,height,0);
+        transform.position = sphere.transform.position - new Vector3(0, height, 0);
         //speed calculation
-        if (Input.GetKey(KeyCode.W)) speed = acculartion;
+        speed = acculartion;
         //
         if (Input.GetAxis("Horizontal") != 0)
         {
             int dir = Input.GetAxis("Horizontal") > 0 ? 1 : -1;
             float amount = Mathf.Abs(Input.GetAxis("Horizontal"));
-            steer(dir,amount);
+            steer(dir, amount);
         }
-        curruntspeed = Mathf.SmoothStep(curruntspeed, speed, Time.deltaTime * 12f);speed = 0f;
-        curruntrotate = Mathf.Lerp(curruntrotate, rotate, Time.deltaTime * 4f);rotate = 0f;
-        
+        curruntspeed = Mathf.SmoothStep(curruntspeed, speed, Time.deltaTime * 12f); speed = 0f;
+        curruntrotate = Mathf.Lerp(curruntrotate, rotate, Time.deltaTime * 4f); rotate = 0f;
+
         //wheel rotation
         for (int i = 0; i < whells.Length; i++)
         {
-            whells[i].transform.Rotate(curruntspeed*rpm* Time.deltaTime, 0, 0);
+            whells[i].transform.Rotate(curruntspeed * rpm * Time.deltaTime, 0, 0);
         }
 
     }
 
     private void FixedUpdate()
     {
-        if (rb.velocity.magnitude<maxspeed)
+        if (rb.velocity.magnitude < maxspeed)
         {
             rb.AddForce(gameObject.transform.forward * curruntspeed, ForceMode.Acceleration);
         }
         //
-        rb.AddForce(Vector3.down*downforce,ForceMode.Acceleration);
+        rb.AddForce(Vector3.down * downforce, ForceMode.Acceleration);
         //
-        float amountofsteer = Mathf.InverseLerp(0,8,rb.velocity.magnitude);
-        transform.localEulerAngles = Vector3.Lerp(transform.localEulerAngles, new Vector3(0, transform.localEulerAngles.y + curruntrotate, 0), Time.deltaTime * 5f*amountofsteer);
+        float amountofsteer = Mathf.InverseLerp(0, 8, rb.velocity.magnitude);
+        transform.localEulerAngles = Vector3.Lerp(transform.localEulerAngles, new Vector3(0, transform.localEulerAngles.y + curruntrotate, 0), Time.deltaTime * 5f * amountofsteer);
 
-        modelheightmatcher();
         drift();
         steeringfront();
-        dirtcheacker();
     }
 
-    public void steer(int direction,float amount)
+    public void steer(int direction, float amount)
     {
         rotate = (steering * (direction * amount));
     }
@@ -85,13 +80,10 @@ public class drive : MonoBehaviour
         curruntdrift = Vector3.Angle(rb.velocity.normalized, gameObject.transform.forward);
         rb.velocity = Vector3.Lerp(rb.velocity, new Vector3(), Time.deltaTime * curruntdrift * dritangel);
         //skids
-        if (Mathf.Abs(curruntdrift)>30)
+        if (Mathf.Abs(curruntdrift) > 30)
         {
-            if (!ondirt)
-            {
-                skids[0].emitting = true;
-                skids[1].emitting = true;
-            }
+            skids[0].emitting = true;
+            skids[1].emitting = true;
 
         }
         else
@@ -99,25 +91,8 @@ public class drive : MonoBehaviour
             skids[0].emitting = false;
             skids[1].emitting = false;
         }
-        //
-        if (ondirt&&rb.velocity.magnitude>10)
-        {
-            dirt.Play();
-        }
-        else
-        {
-            dirt.Stop();
-        }
 
     }
-
-    public void modelheightmatcher()
-    {
-        RaycastHit hiton;
-        Physics.Raycast(transform.position + new Vector3(0, height, 0), Vector3.down, out hiton, 5f);
-        p.transform.up = Vector3.Lerp(gameObject.transform.up, hiton.normal, Time.deltaTime * 18f);
-    }
-    
     private void steeringfront()
     {
         //front wheels steering 
@@ -128,20 +103,4 @@ public class drive : MonoBehaviour
 
     }
 
-    private void dirtcheacker()
-    {
-        RaycastHit hiton;
-        if(Physics.Raycast(transform.position + new Vector3(0, height, 0), Vector3.down, out hiton, 5f))
-        {
-            if (hiton.transform.tag == "dirt")
-            {
-                ondirt = true;
-            }
-            else
-            {
-                ondirt = false;
-            }
-        }
-
-    }
 }
