@@ -14,7 +14,6 @@ public class camerafollow : MonoBehaviour
     private void FixedUpdate()
     {
         Vector3 pose = target.transform.position - offset;
-        pose.y = 0f;
         gameObject.transform.position = Vector3.Lerp(gameObject.transform.position, pose, 0.05f);
     }
 
